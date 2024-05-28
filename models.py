@@ -17,7 +17,6 @@ class RNN(nn.Module):
         out, hn = self.rnn(x, h0)
         out = self.fc(out[:, -1, :])  # process the last output
 
-        # Future predictions if needed
         outputs = [out]
         for _ in range(future_num):
             out, hn = self.rnn(out.unsqueeze(1), hn)  # Feed the last output back into the RNN
@@ -59,10 +58,9 @@ class LSTM(nn.Module):
         self.num_layers = num_layers
 
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
-        self.fc = nn.Linear(hidden_size, output_size)  # Output one value per sequence
+        self.fc = nn.Linear(hidden_size, output_size)
 
     def forward(self, x, future_num=0):
-        # Initialize hidden and cell states
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
 
@@ -70,7 +68,6 @@ class LSTM(nn.Module):
         out, (hn, cn) = self.lstm(x, (h0, c0))
         out = self.fc(out[:, -1, :])  # Last time step
 
-        # Future predictions
         outputs = [out]
         for _ in range(future_num):
             out, (hn, cn) = self.lstm(out.unsqueeze(1), (hn, cn))
